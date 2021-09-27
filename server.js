@@ -1,48 +1,56 @@
-'use strict';
+'use strict'
 
 const express = require('express');
-require('dotenv').config();
 const cors = require('cors');
+require('dotenv').config();
+
+
 
 const server = express();
-
-const searchQuery = require('./data/weather.json')
-
-const PORT = process.env.PORT;
 server.use(cors());
 
+const weatHerData = require('./data/weather.json')
 
-server.get('/',(req,res)=>{
-    res.status(200).send('home route')
+let PORT = process.env.PORT;
+console.log(PORT);
+
+
+server.get('/', (request, response) => {
+    response.send('home')
 })
 
 
-server.get('/test',(request,response)=>{
-    response.send('api server is working')
+class Forecast {
+    constructor(data, description) {
+        this.data = data;
+        this.description = description;
+    }
+}
+
+server.get('/test', (request, response) => {
+    response.send('api working')
 })
 
-server.get('/getWeather',(req,res)=>{
-  
 
-    let dayweather = req.query.weatherday;
-    console.log(req.query);
-    console.log(req.query.weatherday)
-    let day = searchQuery.data.find((item)=>{
-        if(item.data === dayweather) {
-            return item
+// localhost:3001/getWeater?searchQuery= 
+server.get('/getWeater', (request, response) => {
+    let searchQuery = request.query.searchQuery;
+    let data_weather = weatHerData .find((iteam) => {
+        if (iteam.city_name.toLowerCase() === searchQuery.toLowerCase()) {
+            return iteam
         }
-        
     })
-    console.log('day weather',day)
-    res.send(day)
-
+    let newArray = data_weather.data.map(element => {
+        return new Forecast(element.datetime, element.weather.description)
+    })
+    response.send(newArray)
 })
 
 
-server.get('*',(req,res)=>{
-    res.status(404).send('route is not found')
+server.get('*', (request, response) => {
+    response.send('404')
 })
 
-server.listen(PORT,()=>{
-    console.log(`Listening on PORT ${PORT}`)
+server.listen(PORT, () => {
+    console.log(`listen on port ${PORT}`);
 })
